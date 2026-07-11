@@ -6,6 +6,25 @@ import './legacy-header.scss'
 
 const appState = loadState('core', 'apps', [])
 
+function hideStockAppMenu() {
+	// Core Vue replaces its original mount element with .app-menu. Do not rely
+	// only on the initial HTML or on a CSS selector that can disappear with it.
+	for (const stockMenu of document.querySelectorAll('#header .header-start > .app-menu')) {
+		stockMenu.style.setProperty('display', 'none', 'important')
+		stockMenu.setAttribute('aria-hidden', 'true')
+	}
+}
+
+function keepStockAppMenuHidden() {
+	const headerStart = document.querySelector('#header .header-start')
+	if (!headerStart) {
+		return
+	}
+
+	hideStockAppMenu()
+	new MutationObserver(hideStockAppMenu).observe(headerStart, { childList: true, subtree: true })
+}
+
 function findMount() {
 	const stockMenuMount = document.querySelector('#header-start__appmenu')
 	if (!stockMenuMount || !stockMenuMount.parentElement) {
@@ -26,6 +45,7 @@ function findMount() {
 }
 
 function mountLegacyMenu() {
+	keepStockAppMenuHidden()
 	const mount = findMount()
 	if (!mount || mount.dataset.legacyHeaderMounted === 'true') {
 		return
