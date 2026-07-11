@@ -1,5 +1,5 @@
-/* Nextcloud 34 only: retain the core component/state, hide its visual trigger. */
-#header-start__appmenu > .app-menu {
+/* Nextcloud 34 only: retain the core AppMenu, but hide its waffle trigger. */
+#header-start__appmenu .app-menu__waffle {
 	display: none !important;
 }
 
