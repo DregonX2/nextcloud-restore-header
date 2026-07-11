@@ -24,5 +24,6 @@ class LoadHeaderAssets implements IEventListener {
 		}
 
 		Util::addScript(Application::APP_ID, 'legacy_header-legacy-header');
+		Util::addStyle(Application::APP_ID, 'legacy_header-legacy-header');
 	}
 }
