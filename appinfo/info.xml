@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<info>
+  <id>legacy_header</id>
+  <name>Restore Header</name>
+  <summary>Restores the Nextcloud 31-style horizontal application menu on Nextcloud 34</summary>
+  <description>Renders a separate, responsive horizontal application menu from Nextcloud's application navigation state. The stock Nextcloud 34 application menu remains mounted but is visually hidden.</description>
+  <version>1.0.0</version>
+  <licence>agpl</licence>
+  <author>DregonX2</author>
+  <namespace>LegacyHeader</namespace>
+  <category>customization</category>
+  <bugs>https://github.com/DregonX2/nextcloud-restore-header/issues</bugs>
+  <dependencies>
+    <nextcloud min-version="34" max-version="34" />
+  </dependencies>
+</info>
