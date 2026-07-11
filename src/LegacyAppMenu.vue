@@ -10,6 +10,7 @@ const visibleCount = ref(props.apps.length)
 const overflowOpen = ref(false)
 let resizeObserver
 let compactMediaQuery
+let headerEnd
 
 const isCompact = ref(false)
 
@@ -41,8 +42,22 @@ async function recalculateOverflow() {
 	if (!menu.value) return
 
 	const items = [...menu.value.querySelectorAll('[data-legacy-menu-item]')]
-	const available = menu.value.clientWidth
-	if (!available || !items.length) return
+	const menuBounds = menu.value.getBoundingClientRect()
+	const headerEndBounds = headerEnd?.getBoundingClientRect()
+	const isRtl = getComputedStyle(menu.value).direction === 'rtl'
+	// The menu mount can be wider than the usable header area because the core
+	// header's flex items share space with search and profile controls. Use the
+	// edge of that end section as the hard limit so menu links never sit below
+	// those controls at intermediate viewport widths.
+	const boundary = headerEndBounds
+		? (isRtl ? menuBounds.right - headerEndBounds.right : headerEndBounds.left - menuBounds.left)
+		: menu.value.clientWidth
+	const available = Math.max(0, Math.min(menu.value.clientWidth, boundary - 8))
+	if (!available) {
+		visibleCount.value = 0
+		return
+	}
+	if (!items.length) return
 
 	// Start with all items measured. If they do not fit, reserve the More control.
 	const widths = items.map((item) => Math.ceil(item.getBoundingClientRect().width))
@@ -82,16 +97,20 @@ onMounted(() => {
 	compactMediaQuery = window.matchMedia('(max-width: 700px)')
 	updateCompactMode(compactMediaQuery)
 	compactMediaQuery.addEventListener('change', updateCompactMode)
-	recalculateOverflow()
+	headerEnd = document.querySelector('#header .header-end')
 	resizeObserver = new ResizeObserver(recalculateOverflow)
 	resizeObserver.observe(menu.value)
+	if (headerEnd) resizeObserver.observe(headerEnd)
+	recalculateOverflow()
 	document.addEventListener('click', closeOverflow)
+	window.addEventListener('resize', recalculateOverflow)
 })
 
 onBeforeUnmount(() => {
 	resizeObserver?.disconnect()
 	compactMediaQuery?.removeEventListener('change', updateCompactMode)
 	document.removeEventListener('click', closeOverflow)
+	window.removeEventListener('resize', recalculateOverflow)
 })
 </script>
 
