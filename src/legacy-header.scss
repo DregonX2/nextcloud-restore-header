@@ -1,7 +1,6 @@
-/* Nextcloud 34 owns this nav and its waffle/popover UI.  Our legacy menu is
- * mounted as a sibling, so hide the complete stock nav without touching any
- * other header controls. */
-#header-start__appmenu .app-menu {
+/* Vue replaces #header-start__appmenu with this nav when it mounts core's
+ * AppMenu.  The legacy menu is a sibling without the .app-menu class. */
+#header .header-start > .app-menu {
 	display: none !important;
 }
 
