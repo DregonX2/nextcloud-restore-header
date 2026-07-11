@@ -1,9 +1,9 @@
 /* Nextcloud 34 only: retain the core component/state, hide its visual trigger. */
-#header .app-menu {
+#header-start__appmenu > .app-menu {
 	display: none !important;
 }
 
-#header-start__appmenu {
+#legacy-header-appmenu-mount {
 	display: flex;
 	flex: 1 1 auto;
 	min-width: 0;
@@ -80,7 +80,7 @@
 .legacy-header-app-menu__more li a { justify-content: flex-start; gap: 8px; height: 40px; }
 
 @media (max-width: 700px) {
-	#header-start__appmenu { flex: 0 1 auto; }
+	#legacy-header-appmenu-mount { flex: 0 1 auto; }
 	.legacy-header-app-menu__list { display: none; }
 	.legacy-header-app-menu__more { display: none; }
 }
