@@ -24,6 +24,9 @@ const visibleApps = computed(() => normalizedApps.value.slice(0, visibleCount.va
 const overflowApps = computed(() => normalizedApps.value.slice(visibleCount.value))
 
 async function recalculateOverflow() {
+	// Measure the complete menu on every resize so items can return from More
+	// when the header becomes wider again.
+	visibleCount.value = normalizedApps.value.length
 	await nextTick()
 	if (!menu.value) return
 
