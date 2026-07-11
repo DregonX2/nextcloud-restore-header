@@ -1,5 +1,7 @@
-/* Nextcloud 34 only: retain the core AppMenu, but hide its waffle trigger. */
-#header-start__appmenu .app-menu__waffle {
+/* Nextcloud 34 owns this nav and its waffle/popover UI.  Our legacy menu is
+ * mounted as a sibling, so hide the complete stock nav without touching any
+ * other header controls. */
+#header-start__appmenu .app-menu {
 	display: none !important;
 }
 
