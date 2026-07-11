@@ -9,6 +9,9 @@ const menu = ref(null)
 const visibleCount = ref(props.apps.length)
 const overflowOpen = ref(false)
 let resizeObserver
+let compactMediaQuery
+
+const isCompact = ref(false)
 
 const normalizedApps = computed(() => props.apps
 	.filter((app) => app && (app.href || app.url))
@@ -24,6 +27,13 @@ const visibleApps = computed(() => normalizedApps.value.slice(0, visibleCount.va
 const overflowApps = computed(() => normalizedApps.value.slice(visibleCount.value))
 
 async function recalculateOverflow() {
+	// Compact headers use one control for the complete app list. Measuring the
+	// hidden inline links at this size would otherwise produce stale results.
+	if (isCompact.value) {
+		visibleCount.value = 0
+		return
+	}
+
 	// Measure the complete menu on every resize so items can return from More
 	// when the header becomes wider again.
 	visibleCount.value = normalizedApps.value.length
@@ -54,12 +64,24 @@ function closeOverflow() {
 	overflowOpen.value = false
 }
 
+function updateCompactMode(event) {
+	isCompact.value = event.matches
+	if (isCompact.value) {
+		visibleCount.value = 0
+	} else {
+		recalculateOverflow()
+	}
+}
+
 watch(normalizedApps, () => {
 	visibleCount.value = normalizedApps.value.length
 	recalculateOverflow()
 }, { deep: true })
 
 onMounted(() => {
+	compactMediaQuery = window.matchMedia('(max-width: 700px)')
+	updateCompactMode(compactMediaQuery)
+	compactMediaQuery.addEventListener('change', updateCompactMode)
 	recalculateOverflow()
 	resizeObserver = new ResizeObserver(recalculateOverflow)
 	resizeObserver.observe(menu.value)
@@ -68,6 +90,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
 	resizeObserver?.disconnect()
+	compactMediaQuery?.removeEventListener('change', updateCompactMode)
 	document.removeEventListener('click', closeOverflow)
 })
 </script>
@@ -82,10 +105,12 @@ onBeforeUnmount(() => {
 				</a>
 			</li>
 		</ul>
-		<div v-if="overflowApps.length" class="legacy-header-app-menu__more" @click.stop>
-			<button type="button" aria-haspopup="menu" :aria-expanded="overflowOpen" @click="overflowOpen = !overflowOpen">More</button>
+		<div v-if="isCompact || overflowApps.length" class="legacy-header-app-menu__more" @click.stop>
+			<button type="button" aria-haspopup="menu" :aria-expanded="overflowOpen" @click="overflowOpen = !overflowOpen">
+				{{ isCompact ? 'Apps' : 'More' }}
+			</button>
 			<ul v-if="overflowOpen" role="menu">
-				<li v-for="app in overflowApps" :key="app.id" role="none">
+				<li v-for="app in (isCompact ? normalizedApps : overflowApps)" :key="app.id" role="none">
 					<a :href="app.href" role="menuitem" :class="{ active: app.active }" @click="closeOverflow">
 						<img v-if="app.icon" :src="app.icon" alt="" aria-hidden="true">
 						<span>{{ app.name }}</span>
