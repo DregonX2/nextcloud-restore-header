@@ -11,6 +11,7 @@ const overflowOpen = ref(false)
 let resizeObserver
 let compactMediaQuery
 let headerEnd
+let searchControl
 
 const isCompact = ref(false)
 
@@ -44,15 +45,21 @@ async function recalculateOverflow() {
 	const items = [...menu.value.querySelectorAll('[data-legacy-menu-item]')]
 	const menuBounds = menu.value.getBoundingClientRect()
 	const headerEndBounds = headerEnd?.getBoundingClientRect()
+	searchControl = document.querySelector('#header .unified-search-input__button, #header .unified-search-input')
+	const searchBounds = searchControl?.getBoundingClientRect()
+	if (searchControl && resizeObserver) resizeObserver.observe(searchControl)
 	const isRtl = getComputedStyle(menu.value).direction === 'rtl'
-	// The menu mount can be wider than the usable header area because the core
-	// header's flex items share space with search and profile controls. Use the
-	// edge of that end section as the hard limit so menu links never sit below
-	// those controls at intermediate viewport widths.
-	const boundary = headerEndBounds
-		? (isRtl ? menuBounds.right - headerEndBounds.right : headerEndBounds.left - menuBounds.left)
-		: menu.value.clientWidth
-	const available = Math.max(0, Math.min(menu.value.clientWidth, boundary - 8))
+	// Nextcloud's search control can visually extend beyond .header-end. Its
+	// rendered edge, rather than the container's edge, is the actual no-go line
+	// for menu links at intermediate viewport widths.
+	const boundaries = [headerEndBounds, searchBounds].filter((bounds) => bounds && bounds.width > 0)
+	const boundary = boundaries.length
+		? (isRtl
+			? Math.max(...boundaries.map((bounds) => bounds.right))
+			: Math.min(...boundaries.map((bounds) => bounds.left)))
+		: (isRtl ? menuBounds.left : menuBounds.right)
+	const usableWidth = isRtl ? menuBounds.right - boundary : boundary - menuBounds.left
+	const available = Math.max(0, Math.min(menu.value.clientWidth, usableWidth - 8))
 	if (!available) {
 		visibleCount.value = 0
 		return
@@ -94,7 +101,10 @@ watch(normalizedApps, () => {
 }, { deep: true })
 
 onMounted(() => {
-	compactMediaQuery = window.matchMedia('(max-width: 700px)')
+	// Nextcloud's centred search field occupies header space well beyond its
+	// flex container. Keep the full icon row for genuinely wide headers only;
+	// tablet and standard laptop widths use the compact control instead.
+	compactMediaQuery = window.matchMedia('(max-width: 1500px)')
 	updateCompactMode(compactMediaQuery)
 	compactMediaQuery.addEventListener('change', updateCompactMode)
 	headerEnd = document.querySelector('#header .header-end')

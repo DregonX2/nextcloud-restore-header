@@ -86,7 +86,7 @@
 
 .legacy-header-app-menu__more li a { justify-content: flex-start; gap: 8px; height: 40px; }
 
-@media (max-width: 700px) {
+@media (max-width: 1500px) {
 	#legacy-header-appmenu-mount { flex: 0 0 auto; }
 	.legacy-header-app-menu__list { display: none; }
 	.legacy-header-app-menu__more { display: block; }
